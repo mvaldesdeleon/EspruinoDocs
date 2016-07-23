@@ -13,7 +13,7 @@ read in single measurement mode:
 compass.reads(function(a){print(a);});
 
 read in continuous measurement mode:
-compass.setmode(0);
+compass.setMode(0);
 console.log(compass.readc());
 
 */
@@ -21,12 +21,12 @@ console.log(compass.readc());
 
 
 exports.connect = function(i2c,drdy,mode) {
-    return new HMC5883(i2c,drdy,range);
+    return new HMC5883(i2c,drdy,mode);
 }
 
 function HMC5883(i2c,drdy,mode) {
   this.i2c = i2c;
-  this.mode = (mode) ? mode : 1;
+  this.mode = (typeof mode !== 'undefined') ? mode : 1;
   this.drdy = drdy;
   this.a=0x1E;
   pinMode(drdy,'input');
@@ -69,11 +69,9 @@ HMC5883.prototype.setGain = function(gain) {
 	this.i2c.writeTo(this.a,[1,((gain & 7)<<5)]);
 	this.i2c.writeTo(this.a,1);
     	this.ngain=(this.i2c.readFrom(this.a,1))>>5;
-    	if (this.mode!=2) {
-		this.onwatch=c;
+    	if (this.mode === 1) {
 		var hmc=this;
 		setWatch(function(){hmc.readc();},this.drdy);
-		this.setmode(1);
     	}
 }
 
@@ -81,5 +79,5 @@ HMC5883.prototype.reads = function(c) {
 	this.onwatch=c;
 	var hmc=this;
 	setWatch(function(){hmc.onwatch(hmc.readc());},this.drdy);
-	this.setmode(1);
+	this.setMode(1);
 }
